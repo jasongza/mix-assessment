@@ -4,7 +4,6 @@ using MixAssessment.Domain.Entities;
 using MixAssessment.Infrastructure.FileReaders;
 using Moq;
 using System;
-using System.Linq;
 using Xunit;
 
 namespace MixAssessment.Tests.Infrastructure
@@ -102,54 +101,6 @@ namespace MixAssessment.Tests.Infrastructure
                 .Returns(readerMock.Object);
 
             Assert.Throws<NotImplementedException>(() => sut.GetFileReader<Vehicle>("/file.unknown"));
-        }
-    }
-
-    public class DriverCsvFileReaderTests
-    {
-        [Fact]
-        public void ReadLines_ReturnsAllRecords()
-        {
-            var sut = new DriverCsvFileReader();
-            sut.SetPath("./Test Files/DriverList.csv");
-
-            Assert.Equal(200, sut.ReadLines().Count());
-        }
-    }
-
-    public class TripDatFileReaderTests
-    {
-        [Fact]
-        public void ReadLines_ReturnsAllRecords()
-        {
-            var sut = new TripDatFileReader();
-            sut.SetPath("./Test Files/Trips.dat");
-
-            Assert.Equal(47316, sut.ReadLines().Count());
-        }
-    }
-
-    public class VehicleCsvFileReaderTests
-    {
-        [Fact]
-        public void ReadLines_ReturnsAllRecords()
-        {
-            var sut = new VehicleCsvFileReader();
-            sut.SetPath("./Test Files/VehicleList.csv");
-
-            Assert.Equal(100, sut.ReadLines().Count());
-        }
-    }
-
-    public class VehicleDriverIdentificationTextFileReaderTests
-    {
-        [Fact]
-        public void ReadLines_ReturnsAllRecords()
-        {
-            var sut = new VehicleDriverIdentificationTextFileReader();
-            sut.SetPath("./Test Files/VehicleDriverIdentifications.txt");
-
-            Assert.Equal(47316, sut.ReadLines().Count());
         }
     }
 }
