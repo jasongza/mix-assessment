@@ -1,11 +1,9 @@
 ﻿using MixAssessment.Application.Interfaces;
 using MixAssessment.Domain.Aggregates;
 using MixAssessment.Domain.Entities;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MixAssessment.Application.Services
@@ -38,7 +36,7 @@ namespace MixAssessment.Application.Services
         {
             List<Driver> drivers = null;
             List<Vehicle> vehicles = null;
-            List<Trip> trips = null;
+            Dictionary<short, List<Trip>> vehicleTripsGrouping = null;
 
             var tasks = new List<Task>
             {
@@ -58,10 +56,12 @@ namespace MixAssessment.Application.Services
                 }),
                 new Task(() =>
                 {
-                    trips = fileReaderFactory
+                    vehicleTripsGrouping = fileReaderFactory
                         .GetFileReader<Trip>("./Input Data/Trips.dat")
                         .ReadLines()
-                        .ToList();
+                        .ToList()
+                        .GroupBy(trip => trip.VehicleId)
+                        .ToDictionary(group => group.Key, group => group.ToList());
                 })
             };
 
@@ -78,10 +78,14 @@ namespace MixAssessment.Application.Services
                 .ReadLines();
 
             Parallel.ForEach(identifications, identification => {
-                var matchingTrip = trips?.FirstOrDefault(trip =>
-                    trip.VehicleId == identification.VehicleId &&
-                    trip.TripStart <= identification.Timestamp &&
-                    trip.TripEnd >= identification.Timestamp);
+                if (!vehicleTripsGrouping.ContainsKey(identification.VehicleId))
+                {
+                    return;
+                }
+
+                Trip matchingTrip = vehicleTripsGrouping[identification.VehicleId].FirstOrDefault(trip =>
+                    trip.TripStartTicks <= identification.TimestampTicks &&
+                    trip.TripEndTicks >= identification.TimestampTicks);
 
                 if (matchingTrip == null)
                 {
